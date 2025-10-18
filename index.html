@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -7,26 +8,76 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header class="container">
+  <header class="container topbar">
     <h1>CRUD de Alumnos</h1>
-    <p class="muted">Frontend vanilla (HTML + CSS + JS) consumiendo FastAPI</p>
+    <div class="actions">
+      <input type="search" id="searchInput" placeholder="Buscar por nombre…" />
+      <button class="btn" id="refreshBtn" title="Recargar">↻</button>
+      <button class="btn primary" id="newAlumnoBtn" title="Nuevo alumno">Nuevo</button>
+      <button class="btn ghost" id="loginBtn">Login</button>
+      <button class="btn danger" id="logoutBtn" hidden>Logout</button>
+    </div>
   </header>
 
-  <main class="container grid">
-    <!-- Panel izquierdo: Formulario -->
-    <section class="card">
-      <h2 id="form-title">Crear alumno</h2>
+  <main class="container">
+    <div class="table-wrapper">
+      <table id="alumnosTable">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>N1</th>
+            <th>N2</th>
+            <th>N3</th>
+            <th>Examen</th>
+            <th>Promedio</th>
+            <th class="center">Acciones</th>
+          </tr>
+        </thead>
+        <tbody><!-- dinámico --></tbody>
+      </table>
+    </div>
+    <p class="muted foot-hint">* Listado público. Crear/editar/eliminar requieren autenticación.</p>
+  </main>
 
-      <!-- Formulario: crear/editar -->
-      <form id="alumno-form" autocomplete="off">
+  <!-- Modal Login -->
+  <div class="modal" id="loginModal" aria-hidden="true" role="dialog" aria-labelledby="loginTitle">
+    <div class="modal__dialog">
+      <header class="modal__header">
+        <h2 id="loginTitle">Iniciar sesión</h2>
+        <button class="icon-btn" data-close="loginModal" aria-label="Cerrar">✕</button>
+      </header>
+      <form id="login-form" class="modal__body" autocomplete="off">
+        <div class="field">
+          <label for="username">Usuario</label>
+          <input id="username" name="username" type="text" placeholder="admin" required />
+        </div>
+        <div class="field">
+          <label for="password">Contraseña</label>
+          <input id="password" name="password" type="password" placeholder="admin123" required />
+        </div>
+        <footer class="modal__footer">
+          <button type="submit" class="btn primary">Entrar</button>
+          <button type="button" class="btn" data-close="loginModal">Cancelar</button>
+        </footer>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Alumno (crear/editar) -->
+  <div class="modal" id="alumnoModal" aria-hidden="true" role="dialog" aria-labelledby="alumnoTitle">
+    <div class="modal__dialog">
+      <header class="modal__header">
+        <h2 id="alumnoTitle">Nuevo alumno</h2>
+        <button class="icon-btn" data-close="alumnoModal" aria-label="Cerrar">✕</button>
+      </header>
+      <form id="alumno-form" class="modal__body" autocomplete="off">
         <input type="hidden" id="alumnoId" />
-
         <div class="field">
           <label for="nombre">Nombre</label>
           <input id="nombre" name="nombre" type="text" placeholder="Nombre completo" required />
         </div>
-
-        <div class="field-group">
+        <div class="field-grid">
           <div class="field">
             <label for="nota1">Nota 1</label>
             <input id="nota1" name="nota1" type="number" step="0.1" min="0" max="10" required />
@@ -44,47 +95,17 @@
             <input id="notaFinal" name="notaFinal" type="number" step="0.1" min="0" max="10" required />
           </div>
         </div>
-
-        <div class="buttons">
+        <p class="hint">Rango permitido: 0.0 a 10.0 — El promedio se calcula en el servidor.</p>
+        <footer class="modal__footer">
           <button type="submit" class="btn primary" id="saveBtn">Guardar</button>
           <button type="button" class="btn" id="resetBtn">Limpiar</button>
-        </div>
-        <p class="hint">Rango permitido: 0.0 a 10.0 — El promedio se calcula en el servidor.</p>
+          <button type="button" class="btn" data-close="alumnoModal">Cerrar</button>
+        </footer>
       </form>
-    </section>
+    </div>
+  </div>
 
-    <!-- Panel derecho: Tabla -->
-    <section class="card">
-      <div class="table-header">
-        <h2>Alumnos</h2>
-        <div class="tools">
-          <input type="search" id="searchInput" placeholder="Buscar por nombre…" />
-          <button class="btn" id="refreshBtn" title="Recargar">↻</button>
-        </div>
-      </div>
-
-      <div class="table-wrapper">
-        <table id="alumnosTable">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Nombre</th>
-              <th>N1</th>
-              <th>N2</th>
-              <th>N3</th>
-              <th>Examen</th>
-              <th>Promedio</th>
-              <th class="center">Acciones</th>
-            </tr>
-          </thead>
-          <tbody><!-- filas dinámicas --></tbody>
-        </table>
-      </div>
-    </section>
-  </main>
-
-  <!-- Snackbar de mensajes -->
-  <div id="snackbar"></div>
+  <div id="snackbar" role="status" aria-live="polite"></div>
 
   <footer class="container footer">
     <small>© CRUD Alumnos — Vanilla JS • FastAPI + MySQL</small>
