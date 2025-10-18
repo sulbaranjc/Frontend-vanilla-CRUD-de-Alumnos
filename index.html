@@ -105,6 +105,23 @@
     </div>
   </div>
 
+  <!-- Modal Confirmación -->
+  <div class="modal" id="confirmModal" aria-hidden="true" role="dialog" aria-labelledby="confirmTitle">
+    <div class="modal__dialog">
+      <header class="modal__header">
+        <h2 id="confirmTitle">Confirmar acción</h2>
+        <button class="icon-btn" data-close="confirmModal" aria-label="Cerrar">✕</button>
+      </header>
+      <div class="modal__body">
+        <p id="confirmMessage">¿Deseas continuar?</p>
+      </div>
+      <footer class="modal__footer">
+        <button class="btn" data-close="confirmModal">Cancelar</button>
+        <button class="btn danger" id="confirmOkBtn">Eliminar</button>
+      </footer>
+    </div>
+  </div>
+
   <div id="snackbar" role="status" aria-live="polite"></div>
 
   <footer class="container footer">

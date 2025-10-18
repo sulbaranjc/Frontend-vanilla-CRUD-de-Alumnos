@@ -1,6 +1,6 @@
 
 /* =========================================================================
-   Frontend vanilla con modales (Login + Crear/Editar alumno) y JWT
+   Frontend vanilla con modales (Login + Crear/Editar + Confirmación) y JWT
    ========================================================================= */
 const API_BASE = "http://127.0.0.1:8000";
 
@@ -21,7 +21,6 @@ function openModal(id){
   const m = document.getElementById(id);
   if(!m) return;
   m.setAttribute("aria-hidden","false");
-  // focus primer input
   const first = m.querySelector("input,button,select,textarea");
   if(first) setTimeout(()=> first.focus(), 50);
 }
@@ -35,7 +34,6 @@ document.addEventListener("click", (e)=>{
   if(closeTarget){
     closeModal(closeTarget.getAttribute("data-close"));
   }
-  // click en backdrop
   if(e.target.classList.contains("modal")){
     e.target.setAttribute("aria-hidden","true");
   }
@@ -54,7 +52,6 @@ function setAuthState(){
   $("#logoutBtn").hidden = !logged;
   $("#newAlumnoBtn").disabled = !logged;
 
-  // ocultar/mostrar acciones de tabla
   $$("#alumnosTable [data-action]").forEach(btn=>{
     btn.style.display = logged ? "inline-block" : "none";
   });
@@ -93,7 +90,6 @@ async function updateAlumno(id, payload){
   return res.json();
 }
 async function deleteAlumno(id){
-  if(!confirm("¿Eliminar este alumno?")) return;
   const res = await fetch(`${API_BASE}/alumnos/${id}`, {
     method:"DELETE",
     headers:{...getAuthHeaders()}
@@ -129,7 +125,6 @@ function renderAlumnos(rows=[]){
   `).join("");
   setAuthState();
 
-  // attach events
   tbody.querySelectorAll("button").forEach(btn => btn.addEventListener("click", async (e)=>{
     const id = e.currentTarget.dataset.id;
     const action = e.currentTarget.dataset.action;
@@ -143,7 +138,10 @@ function renderAlumnos(rows=[]){
       }
     }
     if(action==="del"){
-      try{ await deleteAlumno(id); } catch(e){ showToast("No se pudo eliminar","err"); }
+      // Abrir confirmación con modal custom
+      pendingDeleteId = id;
+      $("#confirmMessage").textContent = `¿Deseas eliminar al alumno #${id}? Esta acción es irreversible.`;
+      openModal("confirmModal");
     }
   }));
 }
@@ -185,7 +183,7 @@ $("#resetBtn").addEventListener("click", resetForm);
 
 $("#alumno-form").addEventListener("submit", async (e)=>{
   e.preventDefault();
-  if(!isAuthenticated()){ showToast("Debes iniciar sesión","err"); return; }
+  if(!isAuthenticated()){ showToast("Debes iniciar sesión","err"); openModal("loginModal"); return; }
   const payload = formToPayload();
   if(!payload.nombre){ showToast("El nombre es obligatorio","err"); return; }
   if(!validateNotas(payload)){ showToast("Las notas deben estar entre 0 y 10","err"); return; }
@@ -203,7 +201,7 @@ $("#alumno-form").addEventListener("submit", async (e)=>{
   }
 });
 
-// ---- login modal
+// ---- login UI
 $("#loginBtn").addEventListener("click", ()=> openModal("loginModal"));
 $("#newAlumnoBtn").addEventListener("click", ()=>{
   if(!isAuthenticated()){ showToast("Debes iniciar sesión","err"); openModal("loginModal"); return; }
@@ -237,6 +235,21 @@ $("#logoutBtn").addEventListener("click", ()=>{
   localStorage.removeItem("token");
   setAuthState();
   showToast("Sesión cerrada");
+});
+
+// ---- confirm delete modal
+let pendingDeleteId = null;
+$("#confirmOkBtn").addEventListener("click", async ()=>{
+  if(!pendingDeleteId) return;
+  try{
+    await deleteAlumno(pendingDeleteId);
+    showToast("Alumno eliminado");
+  }catch(e){
+    showToast("No se pudo eliminar","err");
+  }finally{
+    pendingDeleteId = null;
+    closeModal("confirmModal");
+  }
 });
 
 // ---- topbar events
